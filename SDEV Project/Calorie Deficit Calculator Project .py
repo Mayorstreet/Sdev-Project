@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, Toplevel
 from PIL import Image, ImageTk
 
-# Activity level multipliers
+# Activity level multipliers for calculating TDEE
 activity_levels = {
     "Sedentary (little to no exercise)": 1.2,
     "Lightly Active (1-3 days per week)": 1.375,
@@ -11,17 +11,18 @@ activity_levels = {
     "Super Active (athlete level)": 1.9
 }
 
-# Convert height from feet/inches to cm
+# Function to convert height from feet and inches to centimeters
 def convert_height(feet, inches):
     return (feet * 12 + inches) * 2.54  # Convert total inches to cm
 
-# Convert weight from pounds to kg
+# Function to convert weight from pounds to kilograms
 def convert_weight(pounds):
     return pounds * 0.453592  # Convert lbs to kg
 
 # Function to calculate TDEE, deficits, and surpluses
 def calculate_tdee():
     try:
+        # Retrieve user input values
         weight_lbs = float(weight_entry.get())
         feet = int(feet_entry.get())
         inches = int(inches_entry.get())
@@ -29,18 +30,20 @@ def calculate_tdee():
         gender = gender_var.get()
         activity_multiplier = activity_levels[activity_var.get()]
 
+        # Convert weight and height to metric system
         weight_kg = convert_weight(weight_lbs)
         height_cm = convert_height(feet, inches)
 
-        # Mifflin-St Jeor Equation
+        # Mifflin-St Jeor Equation for BMR
         if gender == "Male":
             bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) + 5
         else:
             bmr = (10 * weight_kg) + (6.25 * height_cm) - (5 * age) - 161
 
+        # Calculate TDEE by applying activity multiplier
         tdee = bmr * activity_multiplier
 
-        # Deficit for weight loss
+        # Caloric intake for weight loss
         deficits = {
             "Lose 0.5 lb/week": tdee - 250,
             "Lose 1 lb/week": tdee - 500,
@@ -48,7 +51,7 @@ def calculate_tdee():
             "Lose 2 lb/week": tdee - 1000
         }
 
-        # Surplus for weight gain
+        # Caloric intake for weight gain
         surpluses = {
             "Gain 0.5 lb/week": tdee + 250,
             "Gain 1 lb/week": tdee + 500,
@@ -56,46 +59,47 @@ def calculate_tdee():
             "Gain 2 lb/week": tdee + 1000
         }
 
+        # Display results in a new window
         display_results(tdee, deficits, surpluses)
-
+    
     except ValueError:
         messagebox.showerror("Input Error", "Please enter valid numerical values.")
 
-# Function to display results in a second window
+# Function to display calculated results in a new window
 def display_results(tdee, deficits, surpluses):
     result_window = Toplevel(root)
     result_window.title("Calorie Calculator Results")
     result_window.geometry("400x400")
     result_window.configure(bg="#ADD8E6")
 
+    # Display Total Daily Energy Expenditure
     tk.Label(result_window, text=f"Your TDEE: {int(tdee)} cal/day", font=("Arial", 12), bg="#ADD8E6").pack(pady=10)
 
-    # Display weight loss deficits
+    # Display caloric intake for weight loss
     tk.Label(result_window, text="Caloric Intake for Weight Loss:", font=("Arial", 10, "bold"), bg="#ADD8E6").pack()
     for rate, cals in deficits.items():
         tk.Label(result_window, text=f"{rate}: {int(cals)} cal/day", font=("Arial", 10), bg="#ADD8E6").pack()
+    
+    tk.Label(result_window, text="", bg="#ADD8E6").pack()  # Spacer
 
-    # Spacer
-    tk.Label(result_window, text="", bg="#ADD8E6").pack()
-
-    # Display weight gain surpluses
+    # Display caloric intake for weight gain
     tk.Label(result_window, text="Caloric Intake for Weight Gain:", font=("Arial", 10, "bold"), bg="#ADD8E6").pack()
     for rate, cals in surpluses.items():
         tk.Label(result_window, text=f"{rate}: {int(cals)} cal/day", font=("Arial", 10), bg="#ADD8E6").pack()
-
+    
     tk.Button(result_window, text="Close", command=result_window.destroy).pack(pady=10)
 
 # Function to exit application
 def exit_app():
     root.quit()
 
-# Main GUI Window
+# Main Tkinter GUI Window
 root = tk.Tk()
 root.title("Calorie Calculator")
 root.geometry("500x600")
 root.configure(bg="#ADD8E6")
 
-# Center frame to hold all widgets
+# Create frame to hold all widgets
 frame = tk.Frame(root, bg="#ADD8E6")
 frame.pack(expand=True)
 
@@ -106,7 +110,7 @@ scale_photo = ImageTk.PhotoImage(scale_img)
 activity_img = Image.open("activity_levels.png").resize((100, 100))
 activity_photo = ImageTk.PhotoImage(activity_img)
 
-# Labels
+# Labels and Input Fields
 tk.Label(frame, text="Calorie Calculator", font=("Arial", 14), bg="#ADD8E6").pack(pady=5)
 tk.Label(frame, image=scale_photo, text="Track Your Calories", compound="top", bg="#ADD8E6").pack()
 
@@ -142,8 +146,7 @@ tk.OptionMenu(frame, activity_var, *activity_levels.keys()).pack()
 tk.Button(frame, text="Calculate Calories", command=calculate_tdee).pack(pady=10)
 tk.Button(frame, text="Exit", command=exit_app).pack(pady=5)
 
-# Activity image
 tk.Label(frame, image=activity_photo, text="Activity Levels", compound="top", bg="#ADD8E6").pack(pady=10)
 
-# Run the application
+# Run the Tkinter main loop
 root.mainloop()
